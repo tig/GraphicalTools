@@ -17,7 +17,7 @@ namespace OutGridView.Cmdlet
         // This adjusts the left margin of all controls
         private const int MARGIN_LEFT = 2;
         // Width of Terminal.Gui ListView selection/check UI elements (old == 4, new == 2)
-        private const int CHECK_WIDTH = 4;
+        private const int CHECK_WIDTH = 2;
         private bool _cancelled;
         private Label _filterLabel;
         private TextField _filterField;
@@ -159,6 +159,20 @@ namespace OutGridView.Cmdlet
                         // Use Key.Unknown for SPACE with no delegate because ListView already
                         // handles SPACE
                         new StatusItem(Key.Unknown, "~SPACE~ Mark Item", null),
+                        new StatusItem(Key.ControlA, "~^A~ Select All", () => 
+                        { 
+                            // This selects only the items that match the Filter
+                            var gvds = _listView.Source as GridViewDataSource;
+                            gvds.GridViewRowList.ForEach(i => i.IsMarked = true);
+                            _listView.SetNeedsDisplay();
+                        }),
+                        new StatusItem(Key.ControlB, "~^B~ Select None", () => 
+                        {
+                            // This un-selects only the items that match the Filter
+                            var gvds = _listView.Source as GridViewDataSource;
+                            gvds.GridViewRowList.ForEach(i => i.IsMarked = false);
+                            _listView.SetNeedsDisplay();
+                        }),
                         new StatusItem(Key.Enter, "~ENTER~ Accept", () =>
                         {
                             if (Application.Top.MostFocused == _listView)
