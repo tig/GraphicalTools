@@ -169,7 +169,7 @@ namespace OutGridView.Cmdlet
                 { 
                     // This selects only the items that match the Filter
                     var gvds = _listView.Source as GridViewDataSource;
-                    _itemSource.GridViewRowList.ForEach(i => i.IsMarked = true);
+                    gvds.GridViewRowList.ForEach(i => i.IsMarked = true);
                     _listView.SetNeedsDisplay();
                 }));
                 
