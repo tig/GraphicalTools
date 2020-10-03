@@ -118,6 +118,9 @@ namespace OutGridView.Cmdlet
         }
 
         private void ApplyFilter(){
+            // Un-Mark any selected items (see Issue #121)
+            _itemSource.GridViewRowList.ForEach(i => i.IsMarked = false);
+
             List<GridViewRow> itemList = GridViewHelpers.FilterData(_itemSource.GridViewRowList, _applicationData.Filter ?? string.Empty);
             // Set the ListView to show only the subset defined by the filter
             _listView.Source = new GridViewDataSource(itemList);
@@ -152,53 +155,60 @@ namespace OutGridView.Cmdlet
 
         private void AddStatusBar(bool visible)
         {
-            var statusBar = new StatusBar(
-                    _applicationData.OutputMode != OutputModeOption.None
-                    ? new StatusItem[]
+            var statusItems = new List<StatusItem>();
+            if (_applicationData.OutputMode != OutputModeOption.None)
+            {
+                // Use Key.Unknown for SPACE with no delegate because ListView already
+                // handles SPACE
+                statusItems.Add(new StatusItem(Key.Unknown, "~SPACE~ Mark Item", null));
+            }
+
+            if (_applicationData.OutputMode == OutputModeOption.Multiple)
+            {
+                statusItems.Add(new StatusItem(Key.ControlA, "~^A~ Select All", () => 
+                { 
+                    // This selects only the items that match the Filter
+                    var gvds = _listView.Source as GridViewDataSource;
+                    _itemSource.GridViewRowList.ForEach(i => i.IsMarked = true);
+                    _listView.SetNeedsDisplay();
+                }));
+                
+                // Use Ctrl-N until Terminal.Gui supports ctrl-shift chords
+                //new StatusItem(Key.ShiftMask | Key.ControlA, "~^SHIFT-A~ Select None", () => 
+                statusItems.Add(new StatusItem(Key.ControlN, "~^N~ Select None", () => 
+                {
+                    // This un-selects only the items that match the Filter
+                    var gvds = _listView.Source as GridViewDataSource;
+                    gvds.GridViewRowList.ForEach(i => i.IsMarked = false);
+                    _listView.SetNeedsDisplay();
+                }));
+            }
+
+            if (_applicationData.OutputMode != OutputModeOption.None)
+            {
+                statusItems.Add(new StatusItem(Key.Enter, "~ENTER~ Accept", () =>
+                {
+                    if (Application.Top.MostFocused == _listView)
                     {
-                        // Use Key.Unknown for SPACE with no delegate because ListView already
-                        // handles SPACE
-                        new StatusItem(Key.Unknown, "~SPACE~ Mark Item", null),
-                        new StatusItem(Key.ControlA, "~^A~ Select All", () => 
-                        { 
-                            // This selects only the items that match the Filter
-                            var gvds = _listView.Source as GridViewDataSource;
-                            gvds.GridViewRowList.ForEach(i => i.IsMarked = true);
-                            _listView.SetNeedsDisplay();
-                        }),
-                        new StatusItem(Key.ControlB, "~^B~ Select None", () => 
+                        // If nothing was explicitly marked, we return the item that was selected
+                        // when ENTER is pressed in Single mode. If something was previously selected
+                        // (using SPACE) then honor that as the single item to return
+                        if (_applicationData.OutputMode == OutputModeOption.Single &&
+                            _itemSource.GridViewRowList.Find(i => i.IsMarked) == null)
                         {
-                            // This un-selects only the items that match the Filter
-                            var gvds = _listView.Source as GridViewDataSource;
-                            gvds.GridViewRowList.ForEach(i => i.IsMarked = false);
-                            _listView.SetNeedsDisplay();
-                        }),
-                        new StatusItem(Key.Enter, "~ENTER~ Accept", () =>
-                        {
-                            if (Application.Top.MostFocused == _listView)
-                            {
-                                // If nothing was explicitly marked, we return the item that was selected
-                                // when ENTER is pressed in Single mode. If something was previously selected
-                                // (using SPACE) then honor that as the single item to return
-                                if (_applicationData.OutputMode == OutputModeOption.Single &&
-                                    _itemSource.GridViewRowList.Find(i => i.IsMarked) == null)
-                                {
-                                    _listView.MarkUnmarkRow();
-                                }
-                                Accept();
-                            }
-                            else if (Application.Top.MostFocused == _filterField)
-                            {
-                                _listView.SetFocus();
-                            }
-                        }),
-                        new StatusItem(Key.Esc, "~ESC~ Close", () => Close())
+                            _listView.MarkUnmarkRow();
+                        }
+                        Accept();
                     }
-                    : new StatusItem[]
+                    else if (Application.Top.MostFocused == _filterField)
                     {
-                        new StatusItem(Key.Esc, "~ESC~ Close",  () => Close())
+                        _listView.SetFocus();
                     }
-            );
+                }));
+            }
+
+            statusItems.Add(new StatusItem(Key.Esc, "~ESC~ Close",  () => Close()));
+            var statusBar = new StatusBar(statusItems.ToArray());
             statusBar.Visible = visible;
             Application.Top.Add(statusBar);
         }
