@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Text;
 
 using NStack;
 
@@ -69,8 +70,10 @@ internal sealed class GridViewDataSource : IListDataSource, IDisposable
         int index = 0;
         while (index < ustr.Length)
         {
-            (var rune, var size) = Utf8.DecodeRune(ustr, index, index - ustr.Length);
-            var count = Rune.ColumnWidth(rune);
+            (var runeValue, var size) = Utf8.DecodeRune(ustr, index, index - ustr.Length);
+            var rune = new System.Text.Rune(runeValue);
+            // Calculate display width - for now use 1 for most characters
+            var count = rune.IsBmp ? 1 : 2;
             if (used + count > width) break;
             driver.AddRune(rune);
             used += count;
@@ -79,7 +82,7 @@ internal sealed class GridViewDataSource : IListDataSource, IDisposable
 
         while (used < width)
         {
-            driver.AddRune(' ');
+            driver.AddRune(new System.Text.Rune(' '));
             used++;
         }
     }

@@ -234,7 +234,12 @@ internal sealed class ConsoleGui : IDisposable
                         if (_applicationData.OutputMode == OutputModeOption.Single &&
                             _inputSource!.GridViewRowList.Find(i => i.IsMarked) == null)
                         {
-                            _listView!.MarkUnmarkRow();
+                            // Toggle the mark on the currently selected item
+                            if (_listView!.SelectedItem >= 0 && _listView.SelectedItem < _listViewSource!.Count)
+                            {
+                                var item = _listViewSource.GridViewRowList[_listView.SelectedItem];
+                                item.IsMarked = !item.IsMarked;
+                            }
                         }
                         Accept();
                     }
@@ -308,14 +313,16 @@ internal sealed class ConsoleGui : IDisposable
 
         private void AddFilter(Window win)
         {
-            _filterLabel = new Label(FILTER_LABEL)
+            _filterLabel = new Label
             {
+                Text = FILTER_LABEL,
                 X = MARGIN_LEFT,
                 Y = 0
             };
 
-            _filterField = new TextField(_applicationData.Filter ?? string.Empty)
+            _filterField = new TextField
             {
+                Text = _applicationData!.Filter ?? string.Empty,
                 X = Pos.Right(_filterLabel) + 1,
                 Y = Pos.Top(_filterLabel),
                 CanFocus = true,
@@ -326,35 +333,36 @@ internal sealed class ConsoleGui : IDisposable
             // In OCGV these are used for select-all/none of items. Selecting items is more
             // common than editing the filter field so we turn them off in the filter textview. 
             // BACKSPACE still works for delete backwards
-            _filterField.ClearKeybinding(Key.A | Key.CtrlMask);
-            _filterField.ClearKeybinding(Key.D | Key.CtrlMask);
+            _filterField.KeyBindings.Remove(Key.A.WithCtrl);
+            _filterField.KeyBindings.Remove(Key.D.WithCtrl);
 
-            var filterErrorLabel = new Label(string.Empty)
+            var filterErrorLabel = new Label
             {
+                Text = string.Empty,
                 X = Pos.Right(_filterLabel) + 1,
                 Y = Pos.Top(_filterLabel) + 1,
-                ColorScheme = Colors.Base,
-                Width = Dim.Fill() - _filterLabel.Text.Length
+                Width = Dim.Fill() - _filterLabel.Text!.Length
             };
 
-            _filterField.TextChanged += (str) =>
+            _filterField.TextChanged += (sender, e) =>
             {
-                // str is the OLD value
-                string filterText = _filterField.Text?.ToString();
+                string? filterText = _filterField.Text?.ToString();
                 try
                 {
                     filterErrorLabel.Text = " ";
-                    filterErrorLabel.ColorScheme = Colors.Base;
-                    filterErrorLabel.Redraw(filterErrorLabel.Bounds);
-                    _applicationData.Filter = filterText;
+                    filterErrorLabel.SetNeedsDraw();
+                    _applicationData!.Filter = filterText;
                     ApplyFilter();
 
                 }
                 catch (Exception ex)
                 {
                     filterErrorLabel.Text = ex.Message;
-                    filterErrorLabel.ColorScheme = Colors.Error;
-                    filterErrorLabel.Redraw(filterErrorLabel.Bounds);
+                    filterErrorLabel.ColorScheme = new ColorScheme 
+                    { 
+                        Normal = new Terminal.Gui.Attribute(Color.BrightRed, Color.Black) 
+                    };
+                    filterErrorLabel.SetNeedsDraw();
                 }
             };
 
@@ -366,12 +374,15 @@ internal sealed class ConsoleGui : IDisposable
 
         private void AddHeaders(Window win, List<string> gridHeaders)
         {
-            var header = new Label(GridViewHelpers.GetPaddedString(
-                gridHeaders,
-                _gridViewDetails.ListViewOffset,
-                _gridViewDetails.ListViewColumnWidths));
-            header.X = 0;
-            if (_applicationData.MinUI)
+            var header = new Label
+            {
+                Text = GridViewHelpers.GetPaddedString(
+                    gridHeaders,
+                    _gridViewDetails!.ListViewOffset,
+                    _gridViewDetails.ListViewColumnWidths),
+                X = 0
+            };
+            if (_applicationData!.MinUI)
             {
                 header.Y = 0;
             }
@@ -383,7 +394,7 @@ internal sealed class ConsoleGui : IDisposable
 
             // This renders dashes under the header to make it more clear what is header and what is data
             var headerLineText = new StringBuilder();
-            foreach (char c in header.Text)
+            foreach (char c in header.Text!)
             {
                 if (c.Equals(' '))
                 {
@@ -398,8 +409,9 @@ internal sealed class ConsoleGui : IDisposable
 
             if (!_applicationData.MinUI)
             {
-                var headerLine = new Label(headerLineText.ToString())
+                var headerLine = new Label
                 {
+                    Text = headerLineText.ToString(),
                     X = 0,
                     Y = Pos.Bottom(header)
                 };
@@ -409,24 +421,29 @@ internal sealed class ConsoleGui : IDisposable
 
         private void AddListView(Window win)
         {
-            _listView = new ListView(_inputSource);
-            _listView.X = MARGIN_LEFT;
-            if (!_applicationData.MinUI)
+            _listView = new ListView
             {
-                _listView.Y = Pos.Bottom(_filterLabel) + 3; // 1 for space, 1 for header, 1 for header underline
+                Source = _inputSource,
+                X = MARGIN_LEFT
+            };
+            if (!_applicationData!.MinUI)
+            {
+                _listView.Y = Pos.Bottom(_filterLabel!) + 3; // 1 for space, 1 for header, 1 for header underline
             }
             else
             {
                 _listView.Y = 1; // 1 for space, 1 for header, 1 for header underline
-        }
-        _listView.Width = Dim.Fill(1);
-        _listView.Height = Dim.Fill();
-        _listView.AllowsMarking = _applicationData!.OutputMode != OutputModeOption.None;
-        _listView.AllowsMultipleSelection = _applicationData.OutputMode == OutputModeOption.Multiple;
-        _listView.AddKeyBinding(Key.Space, Command.ToggleChecked, Command.LineDown);
+            }
+            _listView.Width = Dim.Fill(1);
+            _listView.Height = Dim.Fill();
+            _listView.AllowsMarking = _applicationData.OutputMode != OutputModeOption.None;
+            _listView.AllowsMultipleSelection = _applicationData.OutputMode == OutputModeOption.Multiple;
+            
+            // In Terminal.Gui v2, key bindings work differently
+            // The ListView already handles Space for toggling marks by default
 
-        win.Add(_listView);
-    }
+            win.Add(_listView);
+        }
 
     public void Dispose()
     {

@@ -37,7 +37,7 @@ internal sealed class ShowObjectView : Window, ITreeBuilder<object>
 
         if (applicationData.MinUI)
         {
-            Border.BorderStyle = BorderStyle.None;
+            BorderStyle = LineStyle.None;
             Title = string.Empty;
             X = -1;
             Height = Dim.Fill();
@@ -53,7 +53,8 @@ internal sealed class ShowObjectView : Window, ITreeBuilder<object>
         tree.AspectGetter = this.AspectGetter;
         tree.SelectionChanged += this.SelectionChanged;
 
-        tree.ClearKeybinding(Command.ExpandAll);
+        // In Terminal.Gui v2, the default keybindings are different
+        // No need to clear ExpandAll keybinding
 
         this.filter = new RegexTreeViewTextFilter(this, tree);
         this.filter.Text = applicationData.Filter ?? string.Empty;
@@ -78,31 +79,31 @@ internal sealed class ShowObjectView : Window, ITreeBuilder<object>
             elementDescription = types[0].Name;
         }
 
-        var lblFilter = new Label()
+        var lblFilter = new Label
         {
             Text = "Filter:",
             X = 1,
         };
-        var tbFilter = new TextField()
+        var tbFilter = new TextField
         {
+            Text = applicationData.Filter ?? string.Empty,
             X = Pos.Right(lblFilter),
-            Width = Dim.Fill(1),
-            Text = applicationData.Filter ?? string.Empty
+            Width = Dim.Fill(1)
         };
         tbFilter.CursorPosition = tbFilter.Text.Length;
 
-        tbFilter.TextChanged += (_) =>
+        tbFilter.TextChanged += (sender, e) =>
         {
             filter.Text = tbFilter.Text?.ToString() ?? string.Empty;
         };
 
 
-        filterErrorLabel = new Label(string.Empty)
+        filterErrorLabel = new Label
         {
+            Text = string.Empty,
             X = Pos.Right(lblFilter) + 1,
             Y = Pos.Top(lblFilter) + 1,
-            ColorScheme = Colors.Base,
-            Width = Dim.Fill() - lblFilter.Text.Length
+            Width = Dim.Fill() - lblFilter.Text!.Length
         };
 
         if (!applicationData.MinUI)
@@ -130,18 +131,22 @@ internal sealed class ShowObjectView : Window, ITreeBuilder<object>
         statusBar.Visible = !applicationData.MinUI;
         Application.Top!.Add(statusBar);
 
-        Add(tree);
-    }
-    private void SetRegexError(string error)
+    Add(tree);
+}
+
+internal void SetRegexError(string error)
+{
+    if (string.Equals(error, filterErrorLabel.Text?.ToString(), StringComparison.Ordinal))
     {
-        if (string.Equals(error, filterErrorLabel.Text?.ToString(), StringComparison.Ordinal))
-            {
-                return;
-            }
-            filterErrorLabel.Text = error;
-            filterErrorLabel.ColorScheme = Colors.Error;
-            filterErrorLabel.Redraw(filterErrorLabel.Bounds);
-        }
+        return;
+    }
+    filterErrorLabel.Text = error;
+    filterErrorLabel.ColorScheme = new ColorScheme 
+    { 
+        Normal = new Terminal.Gui.Attribute(Color.BrightRed, Color.Black) 
+    };
+    filterErrorLabel.SetNeedsDraw();
+}
 
     private void SelectionChanged(object? sender, SelectionChangedEventArgs<object> e)
     {
