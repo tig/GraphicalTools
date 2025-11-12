@@ -1,7 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <Import Project="..\..\GraphicalTools.Common.props" />
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -16,7 +18,7 @@
 
     <ItemGroup>
         <PackageReference Include="Nstack.Core" Version="1.0.7" />
-        <PackageReference Include="Terminal.Gui" Version="1.14.0" />
+        <PackageReference Include="Terminal.Gui" Version="2.0.0" />
         <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.2.15" />
     </ItemGroup>
 
