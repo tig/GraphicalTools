@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\GraphicalTools.Common.props" />
+  <Import Project="..\..\ConsoleGuiTools.Common.props" />
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 </Project>
