@@ -167,38 +167,39 @@ internal sealed class ConsoleGui : IDisposable
         {
             _cancelled = true;
             Application.RequestStop();
-        }
+    }
 
-        private Window CreateTopLevelWindow()
+    private Window CreateTopLevelWindow()
+    {
+        // Creates the top-level window to show
+        var win = new Window
         {
-            // Creates the top-level window to show
-            var win = new Window(_applicationData.Title)
-            {
-                X = _applicationData.MinUI ? -1 : 0,
-                Y = _applicationData.MinUI ? -1 : 0,
+            Title = _applicationData!.Title ?? "Out-ConsoleGridView",
+            X = _applicationData.MinUI ? -1 : 0,
+            Y = _applicationData.MinUI ? -1 : 0,
 
-                // By using Dim.Fill(), it will automatically resize without manual intervention
-                Width = Dim.Fill(_applicationData.MinUI ? -1 : 0),
-                Height = Dim.Fill(_applicationData.MinUI ? -1 : 1)
-            };
+            // By using Dim.Fill(), it will automatically resize without manual intervention
+            Width = Dim.Fill(_applicationData.MinUI ? -1 : 0),
+            Height = Dim.Fill(_applicationData.MinUI ? -1 : 1)
+        };
 
-            if (_applicationData.MinUI)
-            {
-                win.Border.BorderStyle = BorderStyle.None;
-            }
-
-            Application.Top.Add(win);
-            return win;
+        if (_applicationData.MinUI)
+        {
+            win.BorderStyle = LineStyle.None;
         }
+
+        Application.Top!.Add(win);
+        return win;
+    }
 
         private void AddStatusBar(bool visible)
         {
             var shortcuts = new List<Shortcut>();
             if (_applicationData!.OutputMode != OutputModeOption.None)
             {
-                // Use Key.Null for SPACE with no delegate because ListView already
+                // Use Key.Empty for SPACE with no delegate because ListView already
                 // handles SPACE
-                shortcuts.Add(new Shortcut(Key.Null, "~SPACE~ Select Item", null));
+                shortcuts.Add(new Shortcut(Key.Empty, "~SPACE~ Select Item", null));
             }
 
             if (_applicationData.OutputMode == OutputModeOption.Multiple)
@@ -208,7 +209,7 @@ internal sealed class ConsoleGui : IDisposable
                     // This selects only the items that match the Filter
                     var gvds = _listView!.Source as GridViewDataSource;
                     gvds!.GridViewRowList.ForEach(i => i.IsMarked = true);
-                    _listView.SetNeedsDisplay();
+                    _listView.SetNeedsDraw();
                 }));
 
                 // Ctrl-D is commonly used in GUIs for select-none 
@@ -217,7 +218,7 @@ internal sealed class ConsoleGui : IDisposable
                     // This un-selects only the items that match the Filter
                     var gvds = _listView!.Source as GridViewDataSource;
                     gvds!.GridViewRowList.ForEach(i => i.IsMarked = false);
-                    _listView.SetNeedsDisplay();
+                    _listView.SetNeedsDraw();
                 }));
             }
 
@@ -247,8 +248,8 @@ internal sealed class ConsoleGui : IDisposable
             shortcuts.Add(new Shortcut(Key.Esc, "~ESC~ Close", () => Close()));
             if (_applicationData.Verbose || _applicationData.Debug)
             {
-                shortcuts.Add(new Shortcut(Key.Null, $" v{_applicationData.ModuleVersion}", null));
-                shortcuts.Add(new Shortcut(Key.Null,
+                shortcuts.Add(new Shortcut(Key.Empty, $" v{_applicationData.ModuleVersion}", null));
+                shortcuts.Add(new Shortcut(Key.Empty,
                 $"{Application.Driver} v{FileVersionInfo.GetVersionInfo(Assembly.GetAssembly(typeof(Application))!.Location).ProductVersion}", null));
             }
 

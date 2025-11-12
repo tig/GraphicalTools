@@ -114,15 +114,15 @@ internal sealed class ShowObjectView : Window, ITreeBuilder<object>
 
         shortcuts.Add(new Shortcut(Key.Esc, "~ESC~ Close", () => Application.RequestStop()));
 
-        var siCount = new Shortcut(Key.Null, $"{rootObjects.Count} {elementDescription}", null);
-        selectedStatusBarItem = new Shortcut(Key.Null, string.Empty, null);
+        var siCount = new Shortcut(Key.Empty, $"{rootObjects.Count} {elementDescription}", null);
+        selectedStatusBarItem = new Shortcut(Key.Empty, string.Empty, null);
         shortcuts.Add(siCount);
         shortcuts.Add(selectedStatusBarItem);
 
         if (applicationData.Debug)
         {
-            shortcuts.Add(new Shortcut(Key.Null, $" v{applicationData.ModuleVersion}", null));
-            shortcuts.Add(new Shortcut(Key.Null,
+            shortcuts.Add(new Shortcut(Key.Empty, $" v{applicationData.ModuleVersion}", null));
+            shortcuts.Add(new Shortcut(Key.Empty,
             $"{Application.Driver} v{FileVersionInfo.GetVersionInfo(Assembly.GetAssembly(typeof(Application))!.Location).ProductVersion}", null));
         }
 
@@ -161,7 +161,7 @@ internal sealed class ShowObjectView : Window, ITreeBuilder<object>
             selectedStatusBarItem.Title = string.Empty;
         }
 
-        statusBar?.SetNeedsDisplay();
+        statusBar?.SetNeedsDraw();
     }
 
     private string? AspectGetter(object toRender)
@@ -439,7 +439,7 @@ sealed class RegexTreeViewTextFilter : ITreeViewFilter<object>
     private void RefreshTreeView()
     {
         _forTree.InvalidateLineMap();
-        _forTree.SetNeedsDisplay();
+        _forTree.SetNeedsDraw();
     }
 
     public bool IsMatch(object model)
