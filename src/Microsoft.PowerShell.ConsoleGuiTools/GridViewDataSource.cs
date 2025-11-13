@@ -6,10 +6,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Text;
-
-using NStack;
-
-using Terminal.Gui;
+using Terminal.Gui.App;
+using Terminal.Gui.Drivers;
+using Terminal.Gui.Text;
+using Terminal.Gui.Views;
 
 namespace OutGridView.Cmdlet;
 
@@ -30,10 +30,14 @@ internal sealed class GridViewDataSource : IListDataSource, IDisposable
         GridViewRowList = itemList;
     }
 
-    public void Render(ListView container, bool selected, int item, int col, int line, int width, int height)
+    public void Render(ListView listView, bool selected, int item, int col, int line, int width, int start = 0)
     {
-        container.Move(col, line);
-        RenderUstr(Application.Driver, GridViewRowList[item].DisplayString, col, line, width);
+        listView.Move(col, line);
+
+        var driver = Application.Driver;
+        var row = GridViewRowList[item];
+        driver!.AddStr(row.DisplayString);
+        
     }
 
     public bool IsMarked(int item) => GridViewRowList[item].IsMarked;
@@ -62,33 +66,10 @@ internal sealed class GridViewDataSource : IListDataSource, IDisposable
     {
         return GridViewRowList;
     }
-
-    // A slightly adapted method from gui.cs
-    private static void RenderUstr(IConsoleDriver driver, ustring ustr, int col, int line, int width)
-    {
-        int used = 0;
-        int index = 0;
-        while (index < ustr.Length)
-        {
-            (var runeValue, var size) = Utf8.DecodeRune(ustr, index, index - ustr.Length);
-            var rune = new System.Text.Rune(runeValue);
-            // Calculate display width - for now use 1 for most characters
-            var count = rune.IsBmp ? 1 : 2;
-            if (used + count > width) break;
-            driver.AddRune(rune);
-            used += count;
-            index += size;
-        }
-
-        while (used < width)
-        {
-            driver.AddRune(new System.Text.Rune(' '));
-            used++;
-        }
-    }
-    
+       
     public void Dispose()
     {
         // No resources to dispose currently
     }
+
 }

@@ -27,8 +27,7 @@ task Build {
         "./publish/Microsoft.PowerShell.ConsoleGuiTools.dll",
         "./publish/Microsoft.PowerShell.ConsoleGuiTools.psd1",
         "./publish/Microsoft.PowerShell.OutGridView.Models.dll",
-        "./publish/Terminal.Gui.dll",
-        "./publish/NStack.dll")
+        "./publish/Terminal.Gui.dll")
     $Assets | ForEach-Object {
         Copy-Item -Force -Path $_ -Destination ../../module
     }

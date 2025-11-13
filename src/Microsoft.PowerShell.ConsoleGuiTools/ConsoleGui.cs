@@ -10,7 +10,12 @@ using System.Text;
 
 using OutGridView.Models;
 
-using Terminal.Gui;
+using Terminal.Gui.App;
+using Terminal.Gui.Configuration;
+using Terminal.Gui.Drawing;
+using Terminal.Gui.Input;
+using Terminal.Gui.ViewBase;
+using Terminal.Gui.Views;
 
 namespace OutGridView.Cmdlet;
 
@@ -32,7 +37,7 @@ internal sealed class ConsoleGui : IDisposable
     private GridViewDataSource? _inputSource;
 
     // _listViewSource is a filtered copy of _inputSource that ListView.Source is set to. 
-    // Changes to IsMarked are propogated back to _inputSource.
+    // Changes to IsMarked are propagated back to _inputSource.
     private GridViewDataSource? _listViewSource;
     private ApplicationData? _applicationData;
     private GridViewDetails? _gridViewDetails;
@@ -358,11 +363,7 @@ internal sealed class ConsoleGui : IDisposable
                 catch (Exception ex)
                 {
                     filterErrorLabel.Text = ex.Message;
-                    filterErrorLabel.ColorScheme = new ColorScheme 
-                    { 
-                        Normal = new Terminal.Gui.Attribute(Color.BrightRed, Color.Black) 
-                    };
-                    filterErrorLabel.SetNeedsDraw();
+                    filterErrorLabel.SchemeName = "Error";
                 }
             };
 

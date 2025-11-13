@@ -17,7 +17,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Nstack.Core" />
         <PackageReference Include="Terminal.Gui" />
         <PackageReference Include="Microsoft.PowerShell.SDK" />
     </ItemGroup>

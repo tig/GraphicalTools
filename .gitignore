@@ -36,8 +36,8 @@ module/
 # Visual Studio 2015
 .vs/
 
-# ignore downloaded .NET
-.dotnet/
+# ingore downloaded .NET
+.dotnet
 
 # Ignore package
 Microsoft.PowerShell.GraphicalTools.zip

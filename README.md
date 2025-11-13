@@ -153,7 +153,7 @@ Now you're ready to build the code.  You can do so in one of two ways:
 
 ```powershell
 pushd ./ConsoleGuiTools
-Invoke-Build Build -ModuleName Microsoft.PowerShell.ConsoleGuiTools
+Invoke-Build Build Microsoft.PowerShell.ConsoleGuiTools
 popd
 ```
 

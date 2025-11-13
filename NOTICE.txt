@@ -15,11 +15,6 @@ USA
 Notwithstanding any other terms, you may reverse engineer this software to the extent
 required to debug changes to any libraries licensed under the GNU Lesser General Public License.
 
----------------------------------------------------------
-
-NStack.Core 1.1.1 - MIT
-
-
 
 MIT License
 

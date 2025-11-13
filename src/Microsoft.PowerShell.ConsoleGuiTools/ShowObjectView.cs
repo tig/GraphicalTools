@@ -13,7 +13,11 @@ using System.Text.RegularExpressions;
 
 using OutGridView.Models;
 
-using Terminal.Gui;
+using Terminal.Gui.App;
+using Terminal.Gui.Drawing;
+using Terminal.Gui.ViewBase;
+using Terminal.Gui.Views;
+using Terminal.Gui.Input;
 
 namespace OutGridView.Cmdlet;
 
@@ -134,19 +138,15 @@ internal sealed class ShowObjectView : Window, ITreeBuilder<object>
     Add(tree);
 }
 
-internal void SetRegexError(string error)
-{
-    if (string.Equals(error, filterErrorLabel.Text?.ToString(), StringComparison.Ordinal))
+    internal void SetRegexError(string error)
     {
-        return;
-    }
-    filterErrorLabel.Text = error;
-    filterErrorLabel.ColorScheme = new ColorScheme 
-    { 
-        Normal = new Terminal.Gui.Attribute(Color.BrightRed, Color.Black) 
-    };
-    filterErrorLabel.SetNeedsDraw();
-}
+        if (string.Equals(error, filterErrorLabel.Text?.ToString(), StringComparison.Ordinal))
+        {
+            return;
+        }
+        filterErrorLabel.Text = error;
+        filterErrorLabel.SchemeName = "Error";
+    }  
 
     private void SelectionChanged(object? sender, SelectionChangedEventArgs<object> e)
     {
