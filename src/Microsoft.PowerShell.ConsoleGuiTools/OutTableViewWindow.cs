@@ -275,7 +275,10 @@ internal sealed class OutTableViewWindow : Runnable<HashSet<int>>
         shortcuts.Add(_rowsShortcut);
 
         if (_applicationData.OutputMode != OutputModeOption.None)
-            shortcuts.Add(new Shortcut(Key.Enter, "Accept", null));
+            shortcuts.Add(new Shortcut(Key.Enter, "Accept", () =>
+            {
+                if (MostFocused == _filterField) _tableView!.SetFocus();
+            }));
 
         if (_applicationData.OutputMode == OutputModeOption.Multiple)
             shortcuts.Add(new Shortcut(Key.A.WithCtrl, "Sel. All", () => _tableView?.SelectAll()));
